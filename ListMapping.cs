@@ -8,28 +8,8 @@ namespace FieldMapping
 
   internal class ListMapping<O,Q> : FieldMapBase where O : class
   {
-    internal void extractAccess(Expression<Func<O,List<Q>>> fx)
-    {
-      var b = fx as LambdaExpression;
-      var g = (b.Body as MemberExpression).Member;
-
-      switch(g.MemberType)
-      {
-        case (System.Reflection.MemberTypes.Field): 
-          { 
-            var gam = g.DeclaringType.GetField(g.Name);
-            this.exp = gam;
-            break;
-          }
-        case (System.Reflection.MemberTypes.Property):
-          {
-            var ggm = g.DeclaringType.GetProperty(g.Name).GetGetMethod(false);
-            this.pi = ggm;
-            break;
-          }
-      }
-    }
-
+    private System.Reflection.MethodInfo _mi = null;
+    
     internal override void set(object o, string[] x, bool exists)
     {
       var res = _GetValue(typeof(Q), x);
@@ -37,7 +17,13 @@ namespace FieldMapping
       Q v = (Q)res;
       List<Q> lst = null;
 
-      if (pi != null) { lst = (List<Q>)pi.Invoke(o,new object[] { }); }
+      if (pi != null) 
+        { 
+          if (_mi == null)
+            { _mi = pi.GetGetMethod(false); }
+          if (_mi != null)
+            { lst = (List<Q>)_mi.Invoke(o,new object[] { }); }
+        }
       if (exp != null) { lst = (List<Q>)exp.GetValue(o); }
 
       lst.Add(v);

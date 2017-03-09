@@ -18,16 +18,24 @@ namespace FieldMapping
     /// Create a Field Mapper for a particular object.
     /// </summary>
     /// <returns></returns>
-    public static FieldMapper<T> Create() { return new FieldMapper<T>(); }
+    public static FieldMapper<T> Create(bool overwrite=true)
+    {
+      var m = new FieldMapper<T>();
+      m.overwrite = overwrite;
+      return m;
+    }
 
     private List<FieldMapBase> _mappings = new List<FieldMapBase>();
+    private bool _overwrite = false;
+    public bool overwrite { get { return _overwrite; } set { _overwrite = value; } }
 
     public FieldMapper<T> field<K>(Expression<Func<T,List<K>>> x, string fieldname)
     {
       var m = new ListMapping<T,K>();
-      m.extractAccess(x);
+      _extractAccess(m,x);
       m.fieldName.Add(fieldname);
       _mappings.Add(m);
+      m.overwrite = this.overwrite;
       return this;
     }
 
@@ -52,6 +60,7 @@ namespace FieldMapping
       _extractAccess(m, x);
 
       _mappings.Add(m);
+      m.overwrite = this.overwrite;
       return this;
     }
 
@@ -73,6 +82,7 @@ namespace FieldMapping
       _extractAccess(m, x);
             
       _mappings.Add(m);
+      m.overwrite = this.overwrite;
       return this;
     }
 
@@ -96,15 +106,20 @@ namespace FieldMapping
     /// <returns></returns>
     public FieldMapper<T> field<K>(Expression<Func<T,K>> x, string fieldName) { return field(x, null, fieldName);  }
 
-    public FieldMapper<T> convert<K>(Expression<Func<T,K>> x, Func<string[],K> convtr, params string[] fields)
+    public FieldMapper<T> convert<K>(Expression<Func<T,K>> x, Func<string[],K> convtr, Func<T,K,K> filter, params string[] fields)
     {
       var m = new FieldMapping<T,K>();
       m.converter = convtr;
+      m.filter = filter;
       m.fieldName.AddRange(fields);
       _extractAccess(m,x);
       _mappings.Add(m);
+      m.overwrite = this.overwrite;
       return this;
     }
+
+    public FieldMapper<T> convert<K>(Expression<Func<T,K>> x, Func<string[],K> convtr, params string[] fields)
+    { return convert(x, convtr, null, fields); }
 
     public FieldMapper<T> map<K>(Expression<Func<T,K>> x, FieldMapper<K> mapper, params string[] fieldnames) 
       where K : class,new()
@@ -118,6 +133,8 @@ namespace FieldMapping
       m.filter = filter;
       m.mapper = mapper;
       _extractAccess(m, x);
+      m.overwrite = this.overwrite;
+      _mappings.Add(m);
       return this;
     }
 
@@ -159,7 +176,7 @@ namespace FieldMapping
           }
         case (System.Reflection.MemberTypes.Property):
           {
-            var ggm = g.DeclaringType.GetProperty(g.Name).GetSetMethod(false);
+            var ggm = g.DeclaringType.GetProperty(g.Name);
             fmb.pi = ggm;
             break;
           }

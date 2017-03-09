@@ -5,9 +5,13 @@ namespace FieldMapping
 {
   internal abstract class FieldMapBase
   {
+    private System.Reflection.MethodInfo _gi = null;
+    private System.Reflection.MethodInfo _mi = null;
+    
     internal List<string> fieldName {get;set; }
     internal System.Reflection.FieldInfo exp {get;set; }
-    internal System.Reflection.MethodInfo pi {get;set; }
+    internal System.Reflection.PropertyInfo pi {get;set; }
+    internal bool overwrite {get;set; }
 
     internal abstract void set(object o, string[] x, bool exists);
 
@@ -15,10 +19,28 @@ namespace FieldMapping
 
     protected void _objchange(object cls, object val)
     {
-      if (exp != null)
-        { exp.SetValue(cls, val); }
+      object o = val;
+
+      if (!overwrite)
+        {
+          Type t = null;
+          if (exp != null) { t = exp.FieldType; o = exp.GetValue(cls); }
+          if (pi != null)
+            {
+              t = pi.PropertyType;
+              if (_gi == null) { _gi = pi.GetGetMethod(false); }
+              if (_gi != null) { o = _gi.Invoke(cls, new object[] {}); }
+            }
+
+          o = _CombineValue(t, o, val);
+        }
+
+      if (exp != null) { exp.SetValue(cls, o); }
       if (pi != null)
-        { pi.Invoke(cls, new object[] { val}); }
+        {
+          if (_mi == null) { _mi = pi.GetSetMethod(false); }
+          if (_mi != null) { _mi.Invoke(cls, new object[] { o }); }
+        }
     }
 
     /// <summary>
@@ -128,6 +150,72 @@ namespace FieldMapping
             }
 
           if (!resok && nullable) { result = null; }
+        }
+
+      return result;
+    }
+
+    internal static object _CombineValue(Type t, object o1, object newo)
+    {
+      object result = null;
+      bool nullable = false;
+      bool resok = false;
+
+      Type coreType = null;
+      coreType = t;
+
+      if (coreType.IsGenericType)
+        {
+          if (t.GetGenericTypeDefinition() == typeof(Nullable<>))
+            { coreType = Nullable.GetUnderlyingType(t); nullable = true; }
+        }
+
+      if (nullable && o1 == null && newo == null) { result = null; }
+      else 
+        {
+          if (nullable && newo == null) { result = o1; }
+          else
+            {
+              if (coreType == typeof(string))
+                {
+                  string val = (string)o1;
+                  if (newo != null) { result = o1 == null ? newo : val + (string)newo; }
+                  else { result = val; }
+                }
+              if (coreType == typeof(decimal))
+                {
+                  decimal d1 = (decimal)o1;
+                  decimal d2 = (decimal)newo;
+                  result = d1 + d2;
+                }
+              if (coreType == typeof(int))
+                {
+                  int i1 = (int)o1;
+                  int i2 = (int)newo;
+                  result = i1 + i2;
+                }
+              if (coreType == typeof(long))
+                {
+                  long l1 = (long)o1;
+                  long l2 = (long)newo;
+                  result = l1 + l2;
+                }
+              if (coreType == typeof(uint))
+                {
+                  uint u1 = (uint)o1;
+                  uint u2 = (uint)newo;
+                  result = u1 + u2;
+                }
+              if (coreType == typeof(bool))
+                {
+                  bool b1 = (bool)o1;
+                  bool b2 = (bool)newo;
+                  result = b1 & b2;
+                }
+
+              if (coreType == typeof(DateTime))
+                { result = o1; }
+            }
         }
 
       return result;
