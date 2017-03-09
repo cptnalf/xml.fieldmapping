@@ -169,6 +169,7 @@ namespace FieldMapping
           if (t.GetGenericTypeDefinition() == typeof(Nullable<>))
             { coreType = Nullable.GetUnderlyingType(t); nullable = true; }
         }
+      if (coreType.IsClass) { nullable = true; }
 
       if (nullable && o1 == null && newo == null) { result = null; }
       else 
@@ -176,6 +177,8 @@ namespace FieldMapping
           if (nullable && newo == null) { result = o1; }
           else
             {
+              result = newo;
+
               if (coreType == typeof(string))
                 {
                   string val = (string)o1;

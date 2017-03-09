@@ -141,7 +141,11 @@ namespace FieldMapping
     public T convert(IReadOnlyDictionary<string,string> record)
     {
       T obj = new T();
+      return convert(obj, record);
+    }
 
+    public T convert(T obj, IReadOnlyDictionary<string,string> record)
+    {
       foreach(var m in _mappings)
         {
           string[] vals = new string[m.fieldName.Count];
@@ -158,7 +162,7 @@ namespace FieldMapping
     public void set(T obj, string field, string value)
     {
       var m = _mappings.Where(x => x.fieldName.Contains(field)).FirstOrDefault();
-      m.set(obj, new string[] { value }, true);
+      if (m != null) { m.set(obj, new string[] { value }, true); }
     }
     
     private void _extractAccess<K>(FieldMapBase fmb, Expression<Func<T,K>> fx)
