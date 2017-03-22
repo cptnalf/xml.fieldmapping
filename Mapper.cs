@@ -29,13 +29,17 @@ namespace FieldMapping
     private bool _overwrite = false;
     public bool overwrite { get { return _overwrite; } set { _overwrite = value; } }
 
-    public FieldMapper<T> field<K>(Expression<Func<T,List<K>>> x, string fieldname)
+    public FieldMapper<T> list<K>(Expression<Func<T,List<K>>> x, string fieldname)
+    { return list(x, false, fieldname); }
+
+    public FieldMapper<T> list<K>(Expression<Func<T,List<K>>> x, bool ignoreNulls, string fieldname)
     {
       var m = new ListMapping<T,K>();
       _extractAccess(m,x);
       m.fieldName.Add(fieldname);
       _mappings.Add(m);
       m.overwrite = this.overwrite;
+      m.ignoreNulls = ignoreNulls;
       return this;
     }
 

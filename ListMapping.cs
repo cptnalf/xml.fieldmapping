@@ -9,6 +9,8 @@ namespace FieldMapping
   internal class ListMapping<O,Q> : FieldMapBase where O : class
   {
     private System.Reflection.MethodInfo _mi = null;
+
+    internal bool ignoreNulls {get;set;}
     
     internal override void set(object o, string[] x, bool exists)
     {
@@ -26,7 +28,7 @@ namespace FieldMapping
         }
       if (exp != null) { lst = (List<Q>)exp.GetValue(o); }
 
-      lst.Add(v);
+      if (!ignoreNulls || v != null) { lst.Add(v); }
     }
   }
 }

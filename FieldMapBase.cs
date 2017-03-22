@@ -108,6 +108,7 @@ namespace FieldMapping
                       if (int.TryParse(origval[0], out x)) { val = x != 0; }
                     }
                 }
+              result = val;
             }
 
           if (typeof(DateTime) == coreType)
@@ -146,7 +147,7 @@ namespace FieldMapping
                   resok = (dtres != DateTime.MinValue);
                 }
 
-              if (resok) { result = dtres; }
+              result = dtres;
             }
 
           if (!resok && nullable) { result = null; }
