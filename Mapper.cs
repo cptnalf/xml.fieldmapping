@@ -30,9 +30,12 @@ namespace FieldMapping
     public bool overwrite { get { return _overwrite; } set { _overwrite = value; } }
 
     public FieldMapper<T> list<K>(Expression<Func<T,List<K>>> x, string fieldname)
-    { return list(x, false, fieldname); }
+    { return list(x, false, null, fieldname); }
 
     public FieldMapper<T> list<K>(Expression<Func<T,List<K>>> x, bool ignoreNulls, string fieldname)
+    { return list(x, ignoreNulls, null, fieldname); }
+
+    public FieldMapper<T> list<K>(Expression<Func<T,List<K>>> x, bool ignoreNulls, Func<T,K,K> filter, string fieldname)
     {
       var m = new ListMapping<T,K>();
       _extractAccess(m,x);
@@ -40,6 +43,8 @@ namespace FieldMapping
       _mappings.Add(m);
       m.overwrite = this.overwrite;
       m.ignoreNulls = ignoreNulls;
+      m.filter = filter;
+
       return this;
     }
 

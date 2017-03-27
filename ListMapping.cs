@@ -11,6 +11,7 @@ namespace FieldMapping
     private System.Reflection.MethodInfo _mi = null;
 
     internal bool ignoreNulls {get;set;}
+    internal Func<O,Q,Q> filter {get;set;}
     
     internal override void set(object o, string[] x, bool exists)
     {
@@ -18,7 +19,7 @@ namespace FieldMapping
       
       Q v = (Q)res;
       List<Q> lst = null;
-
+      
       if (pi != null) 
         { 
           if (_mi == null)
@@ -27,6 +28,12 @@ namespace FieldMapping
             { lst = (List<Q>)_mi.Invoke(o,new object[] { }); }
         }
       if (exp != null) { lst = (List<Q>)exp.GetValue(o); }
+
+      if (filter != null)
+        {
+          O ob1 = o as O;
+          v = filter(ob1,v);
+        }
 
       if (!ignoreNulls || v != null) { lst.Add(v); }
     }

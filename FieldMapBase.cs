@@ -175,7 +175,11 @@ namespace FieldMapping
       if (nullable && o1 == null && newo == null) { result = null; }
       else 
         {
-          if (nullable && newo == null) { result = o1; }
+          if (nullable && (o1 == null || newo == null))
+            {
+              if (newo == null) { result = o1; }
+              if (o1 == null) { result = newo; }
+            }
           else
             {
               result = newo;
@@ -218,7 +222,12 @@ namespace FieldMapping
                 }
 
               if (coreType == typeof(DateTime))
-                { result = o1; }
+                {
+                  DateTime do1 = (DateTime)o1;
+                  DateTime no = (DateTime)newo;
+                  if (do1 == DateTime.MinValue && no != DateTime.MinValue) { result = newo; }
+                  if (no == DateTime.MinValue) { result = o1; }
+                }
             }
         }
 
