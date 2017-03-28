@@ -81,16 +81,22 @@ namespace FieldMapping
               resok = int.TryParse(origval[0], out val);
               result = val;
             }
+          if (typeof(uint) == coreType)
+            {
+              uint val = 0;
+              resok = uint.TryParse(origval[0], out val);
+              result = val;
+            }
           if (typeof(long) == coreType)
             {
               long val = 0;
               resok = long.TryParse(origval[0], out val);
               result = val;
             }
-          if (typeof(uint) == coreType)
+          if (typeof(ulong) == coreType)
             {
-              uint val = 0;
-              resok = uint.TryParse(origval[0], out val);
+              ulong val = 0;
+              resok = ulong.TryParse(origval[0], out val);
               result = val;
             }
           if (typeof(bool) == coreType)
