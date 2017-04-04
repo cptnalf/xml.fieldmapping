@@ -105,9 +105,23 @@ namespace FieldMapping
               resok = true;
               if (!bool.TryParse(origval[0], out val))
                 {
-                  resok = false;
-                  if (string.Compare(origval[0], "yes", true) == 0) { val = true; }
-                  if (string.Compare(origval[0], "no", true) == 0) { val = false; }
+                  resok = true;
+                  if (string.Compare(bool.FalseString, origval[0], true) == 0) { val = false; }
+                  else
+                    {
+                      if (string.Compare(bool.TrueString, origval[0], true) == 0) { val = true; }
+                      else
+                        {
+                          if (string.Compare(origval[0], "yes", true) == 0) { val = true; }
+                          else
+                            {
+                              if (string.Compare(origval[0], "no", true) == 0) { val = false; }
+                              else
+                                { resok = false; }
+                            }
+                        }
+                    }
+                  
                   if (!resok)
                     {
                       int x = -1;
