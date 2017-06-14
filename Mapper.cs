@@ -29,12 +29,36 @@ namespace FieldMapping
     private bool _overwrite = false;
     public bool overwrite { get { return _overwrite; } set { _overwrite = value; } }
 
+    /// <summary>
+    /// map a field in the source to a list in the target object type.
+    /// </summary>
+    /// <typeparam name="K"></typeparam>
+    /// <param name="x"></param>
+    /// <param name="fieldname"></param>
+    /// <returns></returns>
     public FieldMapper<T> list<K>(Expression<Func<T,List<K>>> x, string fieldname)
     { return list(x, false, null, fieldname); }
 
+    /// <summary>
+    /// map a field in the source to a list in the target object type.
+    /// </summary>
+    /// <typeparam name="K"></typeparam>
+    /// <param name="x"></param>
+    /// <param name="ignoreNulls">ignore null source values.</param>
+    /// <param name="fieldname">source field name</param>
+    /// <returns></returns>
     public FieldMapper<T> list<K>(Expression<Func<T,List<K>>> x, bool ignoreNulls, string fieldname)
     { return list(x, ignoreNulls, null, fieldname); }
 
+    /// <summary>
+    /// map a field in the source to a list in the target object type.
+    /// </summary>
+    /// <typeparam name="K"></typeparam>
+    /// <param name="x"></param>
+    /// <param name="ignoreNulls">ignore null source values</param>
+    /// <param name="filter">pass the source value through a filter function</param>
+    /// <param name="fieldname"></param>
+    /// <returns></returns>
     public FieldMapper<T> list<K>(Expression<Func<T,List<K>>> x, bool ignoreNulls, Func<T,K,K> filter, string fieldname)
     {
       var m = new ListMapping<T,K>();
@@ -115,6 +139,15 @@ namespace FieldMapping
     /// <returns></returns>
     public FieldMapper<T> field<K>(Expression<Func<T,K>> x, string fieldName) { return field(x, null, fieldName);  }
 
+    /// <summary>
+    /// convert a source value (or values) from strings to a target type in the given object type.
+    /// </summary>
+    /// <typeparam name="K"></typeparam>
+    /// <param name="x"></param>
+    /// <param name="convtr">conversion function to be called.</param>
+    /// <param name="filter">filter the converted value gets passed to before it's commited to the object</param>
+    /// <param name="fields"></param>
+    /// <returns></returns>
     public FieldMapper<T> convert<K>(Expression<Func<T,K>> x, Func<string[],K> convtr, Func<T,K,K> filter, params string[] fields)
     {
       var m = new FieldMapping<T,K>();
@@ -127,13 +160,38 @@ namespace FieldMapping
       return this;
     }
 
+    /// <summary>
+    /// convert a source value (or values) from strings to a target type in the given object type.
+    /// </summary>
+    /// <typeparam name="K"></typeparam>
+    /// <param name="x"></param>
+    /// <param name="convtr">conversion function to be called.</param>
+    /// <param name="fields"></param>
+    /// <returns></returns>
     public FieldMapper<T> convert<K>(Expression<Func<T,K>> x, Func<string[],K> convtr, params string[] fields)
     { return convert(x, convtr, null, fields); }
 
+    /// <summary>
+    /// map a set of source values from strings to another FieldMapper
+    /// </summary>
+    /// <typeparam name="K"></typeparam>
+    /// <param name="x"></param>
+    /// <param name="mapper">mapper that will convert the field-values into an object</param>
+    /// <param name="fieldnames"></param>
+    /// <returns></returns>
     public FieldMapper<T> map<K>(Expression<Func<T,K>> x, FieldMapper<K> mapper, params string[] fieldnames) 
       where K : class,new()
     { return map(x, mapper, null, fieldnames); }
 
+    /// <summary>
+    /// map a set of source values from strings to another FieldMapper.
+    /// </summary>
+    /// <typeparam name="K"></typeparam>
+    /// <param name="x"></param>
+    /// <param name="mapper">mapper object that will process the source fields into an object</param>
+    /// <param name="filter">function which the converted object gets passed to before it's set on the target type.</param>
+    /// <param name="fieldnames"></param>
+    /// <returns></returns>
     public FieldMapper<T> map<K>(Expression<Func<T,K>> x, FieldMapper<K> mapper, Func<T,K,K> filter, params string[] fieldnames) 
       where K : class,new()
     {
@@ -147,12 +205,26 @@ namespace FieldMapping
       return this;
     }
 
+    /// <summary>
+    /// convert a dictionary of fields into an object using the source to target field mappings.
+    /// </summary>
+    /// <param name="record"></param>
+    /// <returns></returns>
+    /// <remarks>
+    /// this does the conversion all at one time and will generate a new object every time.
+    /// </remarks>
     public T convert(IReadOnlyDictionary<string,string> record)
     {
       T obj = new T();
       return convert(obj, record);
     }
 
+    /// <summary>
+    /// takes an existing object and processes the given source fields mapping them to the given target object
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <param name="record"></param>
+    /// <returns></returns>
     public T convert(T obj, IReadOnlyDictionary<string,string> record)
     {
       foreach(var m in _mappings)
@@ -167,7 +239,18 @@ namespace FieldMapping
       return obj;
     }
 
+    /// <summary>
+    /// create a new instance of the target type.
+    /// </summary>
+    /// <returns></returns>
     public T create() { return new T(); }
+
+    /// <summary>
+    /// specifies one value for the source field, and processes the source-field mappings for the target object.
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <param name="field"></param>
+    /// <param name="value"></param>
     public void set(T obj, string field, string value)
     {
       var m = _mappings.Where(x => x.fieldName.Contains(field)).FirstOrDefault();

@@ -6,6 +6,11 @@ namespace FieldMapping
 {
   using System.Linq.Expressions;
 
+  /// <summary>
+  /// processes the saving of a target list field on a target object type.
+  /// </summary>
+  /// <typeparam name="O"></typeparam>
+  /// <typeparam name="Q"></typeparam>
   internal class ListMapping<O,Q> : FieldMapBase where O : class
   {
     private System.Reflection.MethodInfo _mi = null;
